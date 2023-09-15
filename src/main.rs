@@ -20,7 +20,7 @@ fn gobble_newline(i: &str) -> IResult<&str, char> {
 fn main() -> Result<(), Error> {
     let start = Instant::now();
     let f = File::open("/Users/guillaume.mazollier/Downloads/000000")?;
-    let mut reader = BufReader::new(f);
+    let reader = BufReader::new(f);
     let content = read_to_string(reader)?;
     let mut text = content.as_str();
 
@@ -44,7 +44,7 @@ fn main() -> Result<(), Error> {
             // remaining input, to be parsed on the next call
             Ok((i, o)) => {
                 //text = i;
-                let (rest, (_, _)) = (full_line, newline).parse(i).unwrap(); // remove the remaining semicolon and newline -- the semicolon need to be add back to query later
+                let (rest, (_, _)) = (full_line, newline).parse(i).ok()?; // remove the remaining semicolon and newline -- the semicolon need to be add back to query later
                 text = rest;
                 Some(o)
             }
@@ -55,7 +55,7 @@ fn main() -> Result<(), Error> {
     let mut i = 0;
     for value in parser_iterator {
         // We match lines from the parsers with the object they represent (5 "lines" -> 5 objects)
-        let (time, _, user, _, query_time, _, timestamp, _, query) = value;
+        let (_time, _, _user, _, _query_time, _, _timestamp, _, query) = value;
         let query = format!("{};", query.replace("`",""));
         let newline = vec![b'\n'];
         output_file.write_all(query.as_bytes())?;
